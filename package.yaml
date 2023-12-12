@@ -1,1 +1,3 @@
 # Toit Package.
+name: pid2
+description: A PID controller implementation

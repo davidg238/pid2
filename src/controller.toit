@@ -1,3 +1,5 @@
+// Licensed under the included MIT License LICENSE1
+
 import core
 
 /**

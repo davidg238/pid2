@@ -1,0 +1,6 @@
+dependencies:
+  host:
+    url: github.com/toitlang/pkg-host
+    version: ^1.11.0
+  pid2:
+    path: ..
