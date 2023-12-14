@@ -1,8 +1,8 @@
 // Licensed under the included MIT License LICENSE2
 
-/*
+/**
 A simple control Faceplate, to control the tank level simulation.
-Run with:  jag run -d host tank-faceplate.toit
+  Run with `jag run -d host tank-faceplate.toit`
 */
 
 import host.pipe

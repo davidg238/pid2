@@ -1,8 +1,8 @@
 // Licensed under the included MIT License LICENSE2
 
-/*
+/**
 A simple tank level simulation, to demonstrate usage of the PI-Controller.
-Run with:  jag run -d host tank-control.toit
+  Run with:  `jag run -d host tank-control.toit`
 
 Use tank-faceplate.toit to control the simulation.
 */
@@ -13,18 +13,22 @@ import system
 import net
 import net.udp
 
-
-level := 50.0 // initial tank level
-sp := 60.0    // setpoint
-vlv := 50.0   // initial valve position
+/** Tank level */
+level := 50.0
+/** Tank level setpoint */
+sp := 60.0
+/** Tank fill valve */
+vlv := 50.0
+/** Control mode */
 auto := true
-spio := false
+/** Loop time, in ms */
+interval := 200 
 
-interval := 200 // loop time, in ms
-/* 
-out, simulated tank level, 0-100 gallons
-loss, random system perturbation, outflow in gpm
-fill valve (in)(0-100%), results in 0-20gpm inflow
+/** 
+Answers the simulated tank level, 0-100 gallons
+  last, the last tank level
+  in, inflow in gpm  (since the fill valve (0-100%) results in 0-20gpm flow)
+  loss, random system perturbation, outflow in gpm
 */  
 tank := :: | last in|
   loss := random 4 12  
@@ -33,11 +37,11 @@ tank := :: | last in|
 
 controller := PI-Controller --kp=10.0 --ti=100 --ks=-1
 
-
 main:
   task :: faceplate
   task :: control
 
+/** Task to accept operater inputs from the `tank-faceplate` process */
 faceplate:
 
   network := net.open
@@ -61,6 +65,7 @@ faceplate:
       else if cmd == "out":
         controller.out-manual = val
 
+/** The control loop, executed every $interval ms*/
 control:
   while true:
     level = tank.call level vlv
