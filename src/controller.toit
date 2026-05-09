@@ -3,7 +3,11 @@
 import core
 
 /**
-PID Controller to adjust a gauge based on a periodic error correction.
+PID Controller with conditional-integration anti-windup.
+
+The output is clamped to $min..$max. The integral term is only
+accumulated when doing so would not push further into a saturation
+the output is already in.
 
 For more context, see https://en.wikipedia.org/wiki/PID_controller
 */
@@ -17,21 +21,29 @@ class Controller:
 
   constructor --.kp=0.0 --.ki=0.0 --.kd=0.0 --.min=0.0 --.max=1.0:
 
-  last_error_/float := 0.0
-  integral_error_/float := 0.0
+  last-error_/float := 0.0
+  integral-error_/float := 0.0
 
   /**
-   Update the controller with a new error and elapsed time since
-    the last update.
+  Updates the controller with a new $error and the elapsed time since
+  the last update.
 
-  Returns the new gauge value after the error correction.
+  Returns the new output value, clamped to $min..$max.
   */
   update error/float elapsed/Duration -> float:
-    elapsed_s := elapsed.in_ns.to_float / Duration.NANOSECONDS_PER_SECOND
-    integral_error_ += error * elapsed_s
-    derivative_error := (error - last_error_) / elapsed_s
-    output := kp * error + ki * integral_error_ + kd * derivative_error
-    last_error_ = error
-    return core.max
-      min
-      core.min max output
+    elapsed-s := elapsed.in-ns.to-float / Duration.NANOSECONDS-PER-SECOND
+    derivative-error := (error - last-error_) / elapsed-s
+    unclamped := kp * error + ki * integral-error_ + kd * derivative-error
+    clamped := core.max min (core.min max unclamped)
+
+    // Direction the integrator's next increment would push the output is
+    // sign(ki * error). Only freeze when output is saturated AND the
+    // increment would push further into that saturation.
+    push := ki * error
+    saturated-high := unclamped > max and push > 0.0
+    saturated-low := unclamped < min and push < 0.0
+    if not (saturated-high or saturated-low):
+      integral-error_ += error * elapsed-s
+
+    last-error_ = error
+    return clamped
