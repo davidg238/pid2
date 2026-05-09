@@ -17,7 +17,7 @@ test-first-order-step-response:
   steady := 0.0
   steps.repeat:
     steady = plant.step 1.0 0.001
-  expect (steady - 2.0).abs < 0.05  // within 2.5% of 2.0
+  expect (steady - 2.0).abs < 0.02  // within 1% of 2.0
 
 /**
 Integrating-Plant: with input == u-bias, output should not change.

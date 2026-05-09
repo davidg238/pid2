@@ -15,6 +15,11 @@ discussed in control engineering:
   $Integrating-Plant: integrating process (e.g. tank level, where flow in
   vs. flow out determines the rate of level change). The output rises or
   falls at a rate proportional to the offset between input and `u-bias`.
+
+The two classes use opposite sign conventions for `disturbance`: it is
+additive on the rate for $First-Order-Plant (e.g. a heat-load disturbance)
+and subtractive on the rate for $Integrating-Plant (e.g. an outflow on a
+tank). Each class's docstring describes the convention used.
 */
 
 /**
@@ -27,6 +32,7 @@ class First-Order-Plant:
   gain/float
   tau/float
   y/float := ?
+  /** Added to the rate of change (e.g. a load disturbance). */
   disturbance/float := 0.0
 
   /**
@@ -55,6 +61,7 @@ class Integrating-Plant:
   gain/float
   u-bias/float
   y/float := ?
+  /** Subtracted from the rate of change (e.g. an outflow on a tank). */
   disturbance/float := 0.0
 
   /**
