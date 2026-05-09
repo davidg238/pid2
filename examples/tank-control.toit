@@ -15,8 +15,6 @@ import net.udp
 
 /** Tank level */
 level := 50.0
-/** Tank level setpoint */
-sp := 60.0
 /** Tank fill valve */
 vlv := 50.0
 /** Control mode */
@@ -38,6 +36,8 @@ tank := :: | last in|
 controller := PI-Controller --kp=10.0 --ti=100.0 --ks=-1
 
 main:
+  controller.sp-manual = 60.0
+  // controller.debug = true  // Uncomment for diagnostic logging.
   task :: faceplate
   task :: control
 
