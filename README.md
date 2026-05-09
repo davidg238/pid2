@@ -31,6 +31,14 @@ the rationale for the operator-mode features, see
   — the positional `Controller` driving the same tank simulation, for
   side-by-side comparison.
 
+## License
+
+All code in this package is MIT-licensed under [`LICENSE2`](LICENSE2)
+(Copyright Ekorau LLC), with one exception: the original positional
+controller in [`src/controller.toit`](src/controller.toit) is MIT-licensed
+under [`LICENSE1`](LICENSE1). Each source file declares its applicable
+license in a one-line header comment.
+
 ## API notes
 
 - `PI-Controller --ti=` is now `float` (previously `int`). Pass `ti=10.0`
