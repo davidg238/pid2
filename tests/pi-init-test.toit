@@ -11,7 +11,7 @@ default-seeded last-values. The first output should be the midpoint of
 [out-min, out-max] in auto mode, ignoring any phantom delta.
 */
 test-no-first-iteration-kick:
-  controller := PI-Controller --kp=10.0 --ti=100 --ks=-1
+  controller := PI-Controller --kp=10.0 --ti=100.0 --ks=-1
   controller.sp-manual = 50.0
   // Real PV is 30, far from default-seeded 50. Without lazy init, a phantom
   // proportional kick would push output to its upper limit.
@@ -22,7 +22,7 @@ test-no-first-iteration-kick:
 First-call output respects custom output limits (uses midpoint, not 50.0).
 */
 test-first-iteration-uses-midpoint:
-  controller := PI-Controller --kp=1.0 --ti=10 --ks=-1
+  controller := PI-Controller --kp=1.0 --ti=10.0 --ks=-1
   controller.out-min = 4.0
   controller.out-max = 20.0
   out := controller.update 10.0
@@ -32,7 +32,7 @@ test-first-iteration-uses-midpoint:
 First call in manual mode returns the clamped manual output.
 */
 test-first-iteration-manual:
-  controller := PI-Controller --kp=10.0 --ti=100 --ks=-1
+  controller := PI-Controller --kp=10.0 --ti=100.0 --ks=-1
   controller.auto = false
   controller.out-manual = 25.0
   out := controller.update 30.0
@@ -44,7 +44,7 @@ The SP limiter must ramp from current PV toward sp-manual rather than
 jumping to sp-manual on the first auto iteration.
 */
 test-manual-to-auto-bumpless:
-  controller := PI-Controller --kp=10.0 --ti=100 --ks=-1
+  controller := PI-Controller --kp=10.0 --ti=100.0 --ks=-1
   controller.sp-limiter.limit = 1.0  // 1 unit/second
   controller.auto = false
   controller.sp-manual = 80.0

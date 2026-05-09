@@ -35,7 +35,7 @@ tank := :: | last in|
   new := last + (in/5 - loss)*(interval/60_000.0)
   min (max 0.0 new) 100.0  // clamp tank level to 0-100gal
 
-controller := PI-Controller --kp=10.0 --ti=100 --ks=-1
+controller := PI-Controller --kp=10.0 --ti=100.0 --ks=-1
 
 main:
   task :: faceplate

@@ -55,9 +55,9 @@ class PI-Controller:
   /**
   Creates a PI controller with nominated proportional gain, integral time and direct/reverse action.
   */
-  constructor --.kp=1.0 --ti/int --.ks/int:
+  constructor --.kp=1.0 --ti/float --.ks/int:
     kp2_ = kp == 0.0? 1.0: kp
-    ti_ = ti * 1.0
+    ti_ = ti
 
   /** 
   Answer the output of the controller.  
@@ -110,9 +110,9 @@ class PI-Controller:
     $ti integral time, in seconds
     $ks direct/reverse acting control
   */
-  tune --.kp/float=1.0 --ti/int --.ks/int -> none:
+  tune --.kp/float=1.0 --ti/float --.ks/int -> none:
     kp2_ = kp == 0.0? 1.0: kp
-    ti_ = ti * 1.0
+    ti_ = ti
 
 
   report_ p1 p2 p3 proportional integral -> none:
