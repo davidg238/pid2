@@ -18,7 +18,9 @@ class PI-Controller:
   sp-limiter := Velocity-Limit --limit=1.0
 
   /** loop process variable */
-  pv /float  := 50.0        
+  pv /float  := 50.0
+  /** The current internal setpoint, after auto/manual select and SP velocity limiting. */
+  sp -> float: return sp_
   /**
   Integral only action, on setpoint change.
   Used in older systems, only works where significant loop integral action is available,
@@ -37,26 +39,29 @@ class PI-Controller:
   /** The maximum limit of the control output */
   out-max := 100.0
 
+  /** When true, $update prints diagnostic info every 10 iterations. */
+  debug /bool := false
+
   sp_ /float  := 50.0
   ti_ /float := 1.0       // integral time constant
   out-pid_ /float := 0.0  // pid algorithm output
   out_ /float := 50.0     // output
   kp2_ /float := 0.0
 
-  time-last_ /int? := 0
-  pv-last_ /float := 50.0
-  sp-last_ /float := 50.0
+  time-last_ /int? := null
+  pv-last_ /float := 0.0
+  sp-last_ /float := 0.0
   dev-last_ /float := 0.0
-  out-last_ /float := 50.0
+  out-last_ /float := 0.0
   n_ := 0
 
   /**
   Creates a PI controller with nominated proportional gain, integral time and direct/reverse action.
   */
-  constructor --.kp=1.0 --ti/int --.ks/int:
-    time-last_ = Time.monotonic-us
+  constructor --.kp=1.0 --ti/float --.ks/int --debug/bool=false:
     kp2_ = kp == 0.0? 1.0: kp
-    ti_ = ti * 1.0
+    ti_ = ti
+    this.debug = debug
 
   /** 
   Answer the output of the controller.  
@@ -64,10 +69,29 @@ class PI-Controller:
   */
   update .pv/float -> float:
     time-now := Time.monotonic-us
+    if time-last_ == null:
+      // First call. Prime last-values from the actual PV and return a
+      // neutral starting output so no phantom delta-based term applies.
+      time-last_ = time-now
+      pv-last_ = pv
+      sp_ = pv
+      sp-last_ = pv
+      dev-last_ = 0.0
+      sp-limiter.prime pv
+      starting := auto ? (out-min + out-max) / 2.0 : out-manual
+      out-last_ = min (max out-min starting) out-max
+      out_ = out-last_
+      if auto: out-manual = out_
+      return out_
+
     dT := (time-now - time-last_) / 1000.0
 
-    s1 := auto? sp-manual: pv
-    sp_ = not auto? s1: (sp-limiter.update s1 dT)
+    if not auto:
+      // Keep the SP limiter anchored at PV so re-engaging auto ramps smoothly.
+      sp-limiter.prime pv
+      sp_ = pv
+    else:
+      sp_ = sp-limiter.update sp-manual dT
 
     dev := pv - sp_
     p1 := dev - dev-last_
@@ -78,7 +102,7 @@ class PI-Controller:
     out-pid_ = proportional + integral + out-last_
     out_ = min (max out-min (auto? out-pid_: out-manual)) out-max
     if auto: out-manual = out_
-    // report_ p1 p2 p3 proportional integral  // uncomment, for understanding of the algorithm
+    if debug: report_ p1 p2 p3 proportional integral
     pv-last_ = pv
     dev-last_ = dev
     out-last_ = out_
@@ -90,9 +114,9 @@ class PI-Controller:
     $ti integral time, in seconds
     $ks direct/reverse acting control
   */
-  tune --.kp/float=1.0 --ti/int --.ks/int -> none:
+  tune --.kp/float=1.0 --ti/float --.ks/int -> none:
     kp2_ = kp == 0.0? 1.0: kp
-    ti_ = ti * 1.0
+    ti_ = ti
 
 
   report_ p1 p2 p3 proportional integral -> none:
@@ -119,8 +143,16 @@ class Velocity-Limit:
     if last_ == null:
       last_ = val
       return val
-    velocity := (val - last_) * 1000.0 / dT 
+    velocity := (val - last_) * 1000.0 / dT
     if velocity.abs > limit:
       velocity = (velocity > 0)? limit: -limit
     last_ += (velocity * dT / 1000.0)
     return last_
+
+  /**
+  Forces the limiter's internal anchor to $val so that the next call to $update
+  ramps from $val toward its target at the configured velocity. Used by the
+  enclosing controller to keep the limiter in sync with PV during manual mode.
+  */
+  prime val/float -> none:
+    last_ = val
