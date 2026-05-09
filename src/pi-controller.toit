@@ -39,6 +39,9 @@ class PI-Controller:
   /** The maximum limit of the control output */
   out-max := 100.0
 
+  /** When true, $update prints diagnostic info every 10 iterations. */
+  debug /bool := false
+
   sp_ /float  := 50.0
   ti_ /float := 1.0       // integral time constant
   out-pid_ /float := 0.0  // pid algorithm output
@@ -55,9 +58,10 @@ class PI-Controller:
   /**
   Creates a PI controller with nominated proportional gain, integral time and direct/reverse action.
   */
-  constructor --.kp=1.0 --ti/float --.ks/int:
+  constructor --.kp=1.0 --ti/float --.ks/int --debug/bool=false:
     kp2_ = kp == 0.0? 1.0: kp
     ti_ = ti
+    this.debug = debug
 
   /** 
   Answer the output of the controller.  
@@ -98,7 +102,7 @@ class PI-Controller:
     out-pid_ = proportional + integral + out-last_
     out_ = min (max out-min (auto? out-pid_: out-manual)) out-max
     if auto: out-manual = out_
-    // report_ p1 p2 p3 proportional integral  // uncomment, for understanding of the algorithm
+    if debug: report_ p1 p2 p3 proportional integral
     pv-last_ = pv
     dev-last_ = dev
     out-last_ = out_
