@@ -1,0 +1,5 @@
+name: pid2-tests
+description: Tests for the pid2 package.
+dependencies:
+  pid2:
+    path: ..
