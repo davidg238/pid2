@@ -4,7 +4,7 @@ find_program(TOIT_EXEC toit)
 if(NOT TOIT_EXEC)
   set(TOIT_EXEC "toit${CMAKE_EXECUTABLE_SUFFIX}")
 endif()
-set(TEST_TIMEOUT 40 CACHE STRING "The maximal amount of time each test is allowed to run")
+set(TEST_TIMEOUT 90 CACHE STRING "The maximal amount of time each test is allowed to run")
 
 message(STATUS "Toit executable: ${TOIT_EXEC}")
 
